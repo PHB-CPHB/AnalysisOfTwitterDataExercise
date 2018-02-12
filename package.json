@@ -2,9 +2,9 @@
   "name": "twitter-exercise",
   "version": "1.0.0",
   "description": "",
-  "main": "twitterDB.js",
+  "main": "server.js",
   "scripts": {
-    "start": "babel-node --presets es2015 db.js"
+    "start": "babel-node --presets es2015 server.js"
   },
   "author": "",
   "license": "ISC",

@@ -1,18 +1,26 @@
 var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
 
+
+async function getConnection(){
 MongoClient.connect(url, function(err, db) {
   if (err) throw err;
-  var dbo = db.db("social_net");
-function getCount() {
+  return db.db("social_net");
+});
+}
+
+export async function getCount(){
+  var dbo = getConnection();
+  console.log(dbo);
+
   dbo.collection("tweets").distinct("user", function(err, result) {
     if (err) throw err;
     console.log("---------------------Total users-------------------")
-    console.log("Total users - " + result.length);
+    return "Total users - " + result.length;
     db.close();
   });
 }
-
+/*
   //Most Grumpy
   dbo.collection("tweets").aggregate(
     [
@@ -114,3 +122,4 @@ function getCount() {
 });
 
 
+*/
