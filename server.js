@@ -14,7 +14,6 @@ app.get('/totalCount', (req, res) => {
 });
 
 app.get('/mostLinks', (req, res) => {
-  console.log(getResultAsJSON(twitterDB.getMostLinks, res));
   getResultAsJSON(twitterDB.getMostLinks, res)
 });
 
