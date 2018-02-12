@@ -1,8 +1,22 @@
 {
-  "name": "MongoDBAssignment",
-  "version": "0.0.0",
-  "private": true,
+  "name": "twitter-exercise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "twitterDB.js",
+  "scripts": {
+    "start": "babel-node --presets es2015 db.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "presets": [
+    "env"
+  ],
   "dependencies": {
+    "express": "^4.16.2",
     "mongodb": "^3.0.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.0.0",
+    "babel-preset-es2015": "^6.0.0"
   }
 }
