@@ -1,34 +1,43 @@
 var express = require('express');
 var app = express();
-import {getCount} from './twitterDB';
+import twitterDB from './twitterDB';
 
 var port = 8081;
-var server = app.listen(port, function() {
-  console.log('Express server listening on port ' + port);
+var server = app.listen(port, () => {
+  console.log("Server started on 127.0.0.1:8081")
 });
 
-app.get('/', (req, res) => res.send("Hello World! \n In here you can see the differten sites i have created \r\n -Total count 127.0.0.1:8081/totalCount \n Most Links: 127.0.0.1:8081/links \n -Most Grumpy: 127.0.0.1:8081/mostGrumpy \n -Most Happy: 127.0.0.1:8081/mostHappy \n -Most Active: 127.0.0.1:8081/mostActive \n -Most Mentioned: 127.0.0.1:8081/mostMentioned"));
+app.get('/', (req, res) => res.send("Hello World! \n In here you can see the differten sites i have created \r\n -Total count 127.0.0.1:8081/totalCount \n Most Links: 127.0.0.1:8081/mostLinks \n -Most Grumpy: 127.0.0.1:8081/mostGrumpy \n -Most Happy: 127.0.0.1:8081/mostHappy \n -Most Active: 127.0.0.1:8081/mostActive \n -Most Mentioned: 127.0.0.1:8081/mostMentioned"));
 
-app.get('/totalCount', function(req, res, next) {
-  res.send(getCount())
+app.get('/totalCount', (req, res) => {
+  getResultAsJSON(twitterDB.getCount, res)
 });
 
-app.get('/links', function(req, res, next) {
-  res.send()
+app.get('/mostLinks', (req, res) => {
+  console.log(getResultAsJSON(twitterDB.getMostLinks, res));
+  getResultAsJSON(twitterDB.getMostLinks, res)
 });
 
-app.get('/mostGrumpy', function(req, res, next) {
-  res.send()
+app.get('/mostGrumpy', (req, res) => {
+  getResultAsJSON(twitterDB.getMostGrumpy, res)
 });
 
-app.get('/mostHappy', function(req, res, next) {
-  res.send()
+app.get('/mostHappy', (req, res) => {
+  getResultAsJSON(twitterDB.getMostHappy, res)
 });
 
-app.get('/mostActive', function(req, res, next) {
-  res.send()
+app.get('/mostActive', (req, res) => {
+  getResultAsJSON(twitterDB.getMostActive, res)
 });
 
-app.get('/mostMentioned', function(req, res, next) {
-  res.send()
+app.get('/mostMentioned', (req, res) => {
+  getResultAsJSON(twitterDB.getMostMentioned, res)
 });
+
+function getResultAsJSON(call, res) {
+  call().then(result => {
+      res.end(JSON.stringify(result));
+  }).catch(err => {
+      res.end(JSON.stringify(err));
+  });
+}

@@ -1,125 +1,126 @@
 var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
 
+let connection;
 
-async function getConnection(){
-MongoClient.connect(url, function(err, db) {
-  if (err) throw err;
-  return db.db("social_net");
-});
+function getTweetsDB(){
+ return new Promise((resolve, reject) =>  {
+   MongoClient.connect(url, function(err, mongoDB) {
+     connection = mongoDB;
+      if (err) reject(err);
+      const tweetsCollection = mongoDB.db("social_net").collection("tweets");
+      resolve(tweetsCollection);
+    });
+ })
 }
 
-export async function getCount(){
-  var dbo = getConnection();
-  console.log(dbo);
-
-  dbo.collection("tweets").distinct("user", function(err, result) {
-    if (err) throw err;
-    console.log("---------------------Total users-------------------")
-    return "Total users - " + result.length;
-    db.close();
-  });
+function closeMongoDB(){
+  try {
+    connection.close();
+  } catch (err) {
+      throw err;
+  }
 }
-/*
-  //Most Grumpy
-  dbo.collection("tweets").aggregate(
-    [
+
+// Total count of unique users in the tweet database
+function getCount(){
+  return new Promise((resolve, reject) => {
+    getTweetsDB().then( db => {
+      db.distinct("user", (err, result) => {
+        if (err)  reject(err);
+        resolve(result.length);
+        closeMongoDB();
+      });
+    });
+  })
+}
+
+// The 5 most grumpy users in the tweet database
+function getMostGrumpy() {
+  const query = [
       {"$match": {"polarity": {"$eq": 0},}},
       {"$group": {"_id": "$user", "count": {"$sum": 1}}},
       {"$sort": {"count": -1}},
       {"$limit": 5}
-    ]
-  ).toArray(function(err, result){
-    if(err) throw err;
-    i = 1;
-    console.log("---------------------Most Grumpy----------------------")
-    result.forEach(function(element){
-      console.log("Most grumpy number: " + i + " - " + element["_id"])
-      i++;
-    });
-    db.close()
-  })
+  ];
 
-  //Most Happy
-  dbo.collection("tweets").aggregate(
-    [
+  return _getAggregatedResultsByQuery(query);
+}
+
+// The 5 most happy users in the tweet database
+function getMostHappy() {
+  const query = [
       {"$match": {"polarity": {"$eq": 4},}},
       {"$group": {"_id": "$user", "count": {"$sum": 1}}},
       {"$sort": {"count": -1}},
       {"$limit": 5}
-    ]
-  ).toArray(function(err, result){
-    if(err) throw err;
-    i = 1;
-    console.log("---------------------Most happy--------------------")
-    result.forEach(function(element){
-      console.log("Most happy number: " + i + " - " + element["_id"])
-      i++;
-    });
-    db.close()
-  })
+  ];
 
-  // Most active
-  dbo.collection("tweets").aggregate(
-    [
+  return _getAggregatedResultsByQuery(query);
+}
+
+// The 10 most active users in the tweet database
+function getMostActive() {
+  const query = [
       {"$group": {"_id": "$user", "count": {"$sum": 1}}},
       {"$sort": {"count": -1}},
       {"$limit": 10}
-    ]
-  ).toArray(function(err, result){
-    if(err) throw err;
-    i = 1;
-    console.log("---------------------Most active--------------------")
-    result.forEach(function(element){
-      console.log("Most active number: " + i + " - " + element["_id"])
-      i++;
-    });
-    db.close()
-  })
-  
-  // Most mentioned users
-  var regexMen = new RegExp('(?=^|(?=[^a-zA-Z0-9-_\\.]))@([A-Za-z]+[A-Za-z0-9_]+)');
-  dbo.collection("tweets").aggregate(
-    [
+  ];
+
+  return _getAggregatedResultsByQuery(query);
+}
+
+// The 10 most mentioned users in the tweet database
+function getMostMentioned() {
+  const regexMen = new RegExp('(?=^|(?=[^a-zA-Z0-9-_\\.]))@([A-Za-z]+[A-Za-z0-9_]+)');
+  const query = [
       {"$match": {"text": {"$regex": regexMen}}},
       {"$project": {"user": "$user", "texts": {"$split": ["$text", " "]}}},
       {"$unwind": "$texts"},
       {"$match": {"texts": {"$regex": regexMen}}},
       {"$group": {"_id": "$texts", "count": {"$sum": 1}}},
-      {"$sort": {"count" : -1}},
-      {"$limit": 10}
-    ]
-  ).toArray(function(err, result){
-    if(err) throw err;
-    i = 1;
-    console.log("---------------------Most mentioned---------------")
-    result.forEach(function(element){
-      console.log("Most active number: " + i + " - " + element["_id"])
-      i++;
-    });
-    db.close()
-  })
-
-  // Most links
-  var regexLink = new RegExp('(?=^|(?=[^a-zA-Z0-9-_\\.]))@([A-Za-z]+[A-Za-z0-9_]+)');
-  dbo.collection("tweets").aggregate(
-    [
-      {"$match": {"text":  {"$regex": regexLink}}},
-      {"$group": {"_id":"$user", "count": {"$sum": 1}}},
       {"$sort": {"count": -1}},
       {"$limit": 10}
-    ]
-  ).toArray(function(err, result){
-    if(err) throw err;
-    i = 1;
-    console.log("---------------------Most Link---------------")
-    result.forEach(function(element){
-      console.log("Most active number: " + i + " - " + element["user"])
-      i++;
+  ];
+
+  return _getAggregatedResultsByQuery(query);
+}
+
+// The 10 most linked users in the tweet database
+function getMostLinks() {
+  const regexLink = new RegExp('(?=^|(?=[^a-zA-Z0-9-_\\.]))@([A-Za-z]+[A-Za-z0-9_]+)');
+  const query = [
+      {"$match": {"text": {"$regex": regexLink}}},
+      {"$group": {"_id": "$user", "count": {"$sum": 1}}},
+      {"$sort": {"count": -1}},
+      {"$limit": 10}
+  ];
+
+  return _getAggregatedResultsByQuery(query);
+}
+
+
+
+function _getAggregatedResultsByQuery(query) {
+    return new Promise((resolve, reject)=> {
+        getTweetsDB().then(db=> {
+            db.aggregate(query).toArray((err, result) => {
+                closeMongoDB();
+                if (err) reject(err);
+                const res = result.map((item, i) => {
+                    return {rank: i + 1, name: item._id, count: item.count};
+                });
+                return resolve(res);
+            })
+        });
     });
-    db.close()
-  })
-});
+}
 
-
-*/
+export default {
+  getCount,
+  getMostGrumpy,
+  getMostHappy,
+  getMostActive,
+  getMostMentioned,
+  getMostLinks,
+}
