@@ -1,8 +1,8 @@
 # Analysis Of Twitter
 
 ## Requirements
- - NPM and Node - Guide can be found [https://www.npmjs.com/get-npm](here)
- - Docker - Guide can be found [https://www.docker.com](here)
+ - NPM and Node - Guide can be found [here](https://www.npmjs.com/get-npm)
+ - Docker - Guide can be found [here](https://www.docker.com)
  - Terminal
 
 ## Setup Docker and Database
